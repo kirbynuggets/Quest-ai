@@ -1,6 +1,6 @@
 import requests
 
-GEMINI_API_KEY = "AIzaSyCRYCMBIJ_k3jrZ-oAP5z6jYscLXYiqThQ"
+GEMINI_API_KEY = ""
 
 
 class Chatbot:
@@ -20,7 +20,7 @@ class Chatbot:
 
 if __name__ == "__main__":
     # Instantiate Chatbot with your Gemini API Key
-    chatbot = Chatbot("AIzaSyCRYCMBIJ_k3jrZ-oAP5z6jYscLXYiqThQ")
+    chatbot = Chatbot("")
     # Get response
     response = chatbot.get_response("Why temperature is used in chatbot code?")
     print(response)

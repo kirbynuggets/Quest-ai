@@ -10,7 +10,7 @@ class ChatbotWindow(QMainWindow):
         super().__init__()
 
         # Instantiate Chatbot class from backend with your Gemini API Key
-        self.chatbot = Chatbot("AIzaSyCRYCMBIJ_k3jrZ-oAP5z6jYscLXYiqThQ")
+        self.chatbot = Chatbot("")
 
         self.setMinimumSize(700, 500)
 
