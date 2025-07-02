@@ -1,0 +1,6 @@
+# For PyQt5 version (requires Qt development libraries)
+# PyQt5==5.15.10
+
+# Working dependencies for tkinter version
+requests==2.31.0
+python-dotenv==1.0.0

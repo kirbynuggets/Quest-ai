@@ -1,51 +1,78 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QLineEdit, QPushButton
 import sys
-from backend import Chatbot
-import threading
+import os
+from PyQt5.QtWidgets import QApplication, QMessageBox, QInputDialog
+from PyQt5.QtCore import Qt
+from chatbot_gui import ChatbotGUI
+from dotenv import load_dotenv
 
+def get_api_key():
+    """Get API key from environment or user input"""
+    # Try to load from .env file
+    load_dotenv()
+    api_key = os.getenv('DEEPSEEK_API_KEY')
+    
+    if api_key:
+        return api_key
+    
+    # If not found, ask user to input
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
+    
+    api_key, ok = QInputDialog.getText(
+        None, 
+        'API Key Required', 
+        'Please enter your DeepSeek API key:\n\n'
+        'You can get one from: https://platform.deepseek.com/\n\n'
+        'This will power Quest-ai with advanced AI capabilities.',
+        text='sk-'
+    )
+    
+    if not ok or not api_key.strip():
+        QMessageBox.critical(None, 'Error', 'API key is required to run Quest-ai!')
+        sys.exit(1)
+    
+    return api_key.strip()
 
-# noinspection PyUnresolvedReferences
-class ChatbotWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+def main():
+    # Create QApplication
+    app = QApplication(sys.argv)
+    app.setApplicationName("Quest-ai")
+    app.setApplicationVersion("1.0")
+    
+    # Set application style
+    app.setStyle('Fusion')
+    
+    # Get API key
+    try:
+        api_key = get_api_key()
+    except Exception as e:
+        QMessageBox.critical(None, 'Error', f'Failed to get API key: {str(e)}')
+        sys.exit(1)
+    
+    # Validate API key format
+    if not api_key.startswith('sk-'):
+        QMessageBox.warning(None, 'Warning', 'API key should start with "sk-". Please verify your key.')
+    
+    # Create and show main window
+    try:
+        window = ChatbotGUI(api_key)
+        window.show()
+        
+        # Center window on screen
+        screen = app.desktop().screenGeometry()
+        size = window.geometry()
+        window.move(
+            (screen.width() - size.width()) // 2,
+            (screen.height() - size.height()) // 2
+        )
+        
+    except Exception as e:
+        QMessageBox.critical(None, 'Error', f'Failed to create Quest-ai window: {str(e)}')
+        sys.exit(1)
+    
+    # Run application
+    sys.exit(app.exec_())
 
-        # Instantiate Chatbot class from backend with your Gemini API Key
-        self.chatbot = Chatbot("")
-
-        self.setMinimumSize(700, 500)
-
-        # Add chat area widget
-        self.chat_area = QTextEdit(self)
-        self.chat_area.setGeometry(10, 10, 480, 320)
-        # To set the chat area only readable
-        self.chat_area.setReadOnly(True)
-
-        # Add the input field widget
-        self.input_area = QLineEdit(self)
-        self.input_area.setGeometry(10, 340, 480, 40)
-        # To send msg when pressed 'Enter' key on keypad rather than selecting 'Send' button on gui
-        self.input_area.returnPressed.connect(self.send_message)
-
-        # Add the button
-        self.button = QPushButton("Send", self)
-        self.button.setGeometry(500, 340, 80, 40)
-        self.button.clicked.connect(self.send_message)
-
-        self.show()
-
-    def send_message(self):
-        user_input = self.input_area.text().strip()
-        self.chat_area.append(f"<p style='color:#333333'>Me: {user_input}</p>")
-        self.input_area.clear()
-        # Threading
-        thread = threading.Thread(target=self.get_bot_response, args=(user_input, ))
-        thread.start()
-
-    def get_bot_response(self, user_input):
-        response = self.chatbot.get_response(user_input)
-        self.chat_area.append(f"<p style='color:#333333; background-color: #E9E9E9'>Bot: {response}</p>")
-
-
-app = QApplication(sys.argv)
-chatbot_window = ChatbotWindow()
-sys.exit(app.exec())
+if __name__ == '__main__':
+    main()
